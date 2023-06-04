@@ -1,0 +1,496 @@
+=======================================
+SQL QUERIES
+=======================================
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+======================================
+
+======================================
+/*
+select patient_id, diagnosis
+from admissions
+group by diagnosis, patient_id
+having count(diagnosis) >= 2;
+*/
+
+======================================
+
+======================================
+
+/*
+select city, count(patient_id)
+from patients
+group by city
+order by count(patient_id) desc, city asc;
+*/
+
+
+======================================
+
+======================================
+
+/*
+SELECT 'Patient' AS role, first_name, last_name 
+FROM patients
+UNION all
+SELECT 'Doctor', first_name, last_name
+FROM doctors;
+*/
+
+======================================
+
+======================================
+
+/* select allergies, count(allergies) as total_diagnosis 
+from patients
+where allergies not null
+group by allergies 
+order by total_diagnosis desc;
+*/
+
+======================================
+
+======================================
+
+/*  select first_name, last_name, birth_date
+from patients
+where birth_date >='1970-01-01' and birth_date < '1980-01-01'
+order by birth_date;
+*/
+
+======================================
+
+======================================
+
+/* select CONCAT(upper(last_name),',',lower(first_name))
+as full_name
+from patients
+order by first_name desc;
+*/
+
+======================================
+
+======================================
+
+/* select province_id, sum(height)
+from patients
+group by province_id
+having sum(height) > 7000;
+*/
+
+======================================
+
+======================================
+
+/*
+select province_id, sum(height) as total_sum
+from patients
+group by province_id
+having total_sum > 7000;
+*/
+
+======================================
+
+======================================
+
+/* select max(weight)- min(weight) as maroni_weight_difference
+from patients
+where last_name = 'Maroni';
+*/
+
+======================================
+
+======================================
+
+/*
+select day(admission_date) as admission_days, 
+count(admission_date) as num_of_admissions
+from admissions
+group by admission_days
+order by count(admission_days) desc;
+*/
+
+======================================
+
+======================================
+
+/*
+select *
+from admissions
+where patient_id = 542
+order by admission_date desc
+limit 1
+;
+*/
+
+======================================
+
+======================================
+
+/*
+select patient_id, attending_doctor_id, diagnosis
+from admissions
+where ((patient_id % 2) = 1 and attending_doctor_id in (1,5,19))
+or (attending_doctor_id like '%2%' and patient_id like '___');
+*/
+
+======================================
+
+======================================
+
+/*
+-- didn't work!
+select doctors.first_name, doctors.last_name, count(admissons.admission_date) as admission_date
+join admissions
+on doctors.doctor_id = admissions.attending_doctor_id
+group by doctor_id
+;
+*/
+
+======================================
+
+======================================
+/*
+select count(*) as total_admissions, doc.first_name, doc.last_name 
+from admissions a
+join doctors doc 
+on a.attending_doctor_id = doc.doctor_id
+group by doctor_id
+;
+*/
+
+======================================
+
+======================================
+
+/*
+select
+  doctor_id,
+  first_name || ' ' || last_name as full_name,
+  min(admission_date) as first_admission_date,
+  max(admission_date) as last_admission_date
+from admissions a
+  join doctors ph on a.attending_doctor_id = ph.doctor_id
+group by doctor_id;
+
+*/
+-- OR 
+
+/*
+select doc.doctor_id,  
+CONCAT(doc.first_name,' ',doc.last_name) as full_name,
+max(a.admission_date) as last_admission,
+min(a.admission_date) as first_admission
+from doctors doc
+join admissions a
+on a.attending_doctor_id = doc.doctor_id
+group by doctor_id
+;
+*/
+
+======================================
+
+======================================
+
+
+/*
+select count(pat.patient_id) as total_num_patients, pn.province_name
+from patients pat
+join province_names pn
+on pn.province_id = pat.province_id
+group by pn.province_name
+order by total_num_patients desc;
+*/
+
+-- group by (by default) get rid of duplicates 
+
+======================================
+
+======================================
+
+
+/*
+select ad.diagnosis, 
+CONCAT(doc.first_name,' ',doc.last_name) as doctor_full_name, 
+CONCAT(pat.first_name,' ',pat.last_name) as patient_full_name
+from admissions ad
+join patients pat
+on ad.patient_id = pat.patient_id
+join doctors doc
+on ad.attending_doctor_id = doc.doctor_id
+order by admission_date;
+*/
+
+======================================
+
+======================================
+
+/*
+select count(*), pat.first_name, pat.last_name
+from patients pat
+group by first_name,last_name
+having count(*) >1
+;
+
+*/
+
+======================================
+
+======================================
+
+/*
+
+select CONCAT(pat.first_name,' ',pat.last_name) as patient_full_name,
+round(height/30.48,1), round(weight*2.205, 0), birth_date, 
+case 
+	when gender = 'M' then 'Male'
+	Else 'Female'
+end as gender_of_patient
+from patients pat
+;
+*/
+
+======================================
+
+======================================
+
+
+/*
+select count(patient_id) as num_of_patients,
+case 
+	when weight < 10 then 0
+    when weight between 10 and 19 then 10
+  	when weight between 20 and 29 then 20
+	when weight between 30 and 39 then 30
+	when weight between 40 and 49 then 40
+	when weight between 50 and 59 then 50
+	when weight between 60 and 69 then 60
+	when weight between 70 and 79 then 70
+	when weight between 80 and 89 then 80
+	when weight between 90 and 99 then 90
+	when weight between 100 and 109 then 100
+	when weight between 110 and 119 then 110
+	when weight between 120 and 129 then 120
+	when weight between 130 and 139 then 130
+    when weight between 140 and 149 then 140
+end as weight_category
+from patients 
+group by weight_category
+order by weight_category desc;
+*/
+
+======================================
+
+======================================
+
+/*
+SELECT
+  COUNT(*) AS patients_in_group,
+  FLOOR(weight / 10) * 10 AS weight_group
+FROM patients
+GROUP BY weight_group
+ORDER BY weight_group DESC;
+
+SELECT
+  TRUNCATE(weight, -1) AS weight_group,
+  count(*)
+FROM patients
+GROUP BY weight_group
+ORDER BY weight_group DESC;
+
+SELECT
+  count(patient_id),
+  weight - weight % 10 AS weight_group
+FROM patients
+GROUP BY weight_group
+ORDER BY weight_group DESC
+
+*/
+
+======================================
+
+======================================
+
+/*
+-- ROUND(weight / POWER(height / 100.0, 2), 1) AS BMI,
+select patient_id, weight, height, weight / POWER(height / 100.0, 2) AS BMI,
+case 
+	when weight/power(height/100.0,2) >= 30.0 then 1
+	--when round(weight/power(height/100.0,2), 1) < 30.0 then 0
+	else 0
+end as isObese
+from patients;
+*/
+
+======================================
+
+======================================
+
+
+/*
+select pat.patient_id, pat.first_name, pat.last_name, doc.specialty
+from patients pat
+join admissions ad
+on ad.patient_id = pat.patient_id
+join doctors doc
+on ad.attending_doctor_id = doc.doctor_id
+where doc.first_name = 'Lisa' and ad.diagnosis = 'Epilepsy';
+*/
+
+======================================
+
+======================================
+
+/*
+SELECT
+  a.patient_id,
+  a.first_name,
+  a.last_name,
+  b.specialty
+FROM
+  patients a,
+  doctors b,
+  admissions c
+WHERE
+  a.patient_id = c.patient_id
+  AND c.attending_doctor_id = b.doctor_id
+  AND c.diagnosis = 'Epilepsy'
+  AND b.first_name = 'Lisa';
+*/
+
+======================================
+
+======================================
+
+/*
+select Min(ad.patient_id), concat(ad.patient_id,len(pat.last_name),year(pat.birth_date)) as temp_password
+from admissions ad
+join patients pat
+on ad.patient_id = pat.patient_id                                 
+group by ad.patient_id;
+*/
+
+======================================
+
+======================================
+
+/*
+select case 
+	when patient_id % 2 = 0 then 'yes'
+    when patient_id % 2 = 1 then 'no'
+end as insurance,
+
+sum(case 
+	when patient_id % 2 = 0 then 10 
+  	else 50
+end) as insurance_costs
+
+from admissions
+group by insurance;
+
+SELECT
+  has_insurance,
+  CASE
+    WHEN has_insurance = 'Yes' THEN COUNT(has_insurance) * 10
+    ELSE count(has_insurance) * 50
+  END AS cost_after_insurance
+FROM (
+    SELECT
+      CASE
+        WHEN patient_id % 2 = 0 THEN 'Yes'
+        ELSE 'No'
+      END AS has_insurance
+    FROM admissions
+  )
+GROUP BY has_insurance
+*/
+
+======================================
+
+======================================
+
+https://stackoverflow.com/questions/67581744/i-have-a-column-called-gender-how-can-i-count-male-and-female-group-by-division
+
+--selects males/females per province (another column)
+/*
+select prov.province_name,
+count(
+  case 
+  	when gender='M' then 1 end ) as Male,
+count(
+  case 
+  when gender='F' then 1 end ) as Female
+from province_names prov
+join patients pat
+on prov.province_id = pat.province_id
+group by province_name
+; 
+*/
+
+======================================
+
+======================================
+
+--selects males/females per province (another column) if males were greater than females
+select prov.province_name,
+count(
+  case 
+  	when gender='M' then 1 end ) as Male,
+count(
+  case 
+  when gender='F' then 1 end ) as Female
+from province_names prov
+join patients pat
+on prov.province_id = pat.province_id
+group by province_name
+having Male > Female
+
+
+--only displays province province_names when males more than females
+
+======================================
+
+======================================
+
+
+/*
+select prov.province_name
+from province_names prov
+join patients pat
+on prov.province_id = pat.province_id
+group by province_name
+having count(
+  case 
+  	when gender='M' then 1 end ) > count(
+  case 
+  when gender='F' then 1 end )
+; 
+*/
+
+======================================
+
+======================================
+
+
+
+/*
+select * 
+from patients
+where first_name like '__r%' 
+	and 
+	gender = 'F'
+	and 
+	(month(birth_date) in (02, 05, 12))
+	and 
+    (weight between 60 and 80)
+    and
+    (patient_id % 2 = 1)
+    and
+    (city = 'Kingston');
+*/
+
+======================================
+
+======================================
